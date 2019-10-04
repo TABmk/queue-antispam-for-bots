@@ -63,7 +63,7 @@ module.exports = class balancer extends EventEmitter {
    * @param {Boolean} wait
    */
   setUser(id, wait) {
-    if (this.cfg) console.log(`[USER] User update: `, id, wait);
+    if (this.cfg.DEBUG) console.log(`[USER] User update: `, id, wait);
     this.cfg.users.set(id, {
       wait,
       time : Date.now()
@@ -102,7 +102,7 @@ module.exports = class balancer extends EventEmitter {
    * @param  {Number} id
    */
   async incUser(id) {
-    if (this.cfg) console.log(`[USER] New user action`, id);
+    if (this.cfg.DEBUG) console.log(`[USER] New user action`, id);
     let user = this.cfg.userMsg.get(id);
     this.cfg.userMsg.set(id, user ? user + 1 : 1);
   }
@@ -113,11 +113,11 @@ module.exports = class balancer extends EventEmitter {
    * if his 'wait' boolean stuck
    */
   localUsersCleaner() {
-    if (this.cfg) console.log(`[USER] Starting user cleaner`);
+    if (this.cfg.DEBUG) console.log(`[USER] Starting user cleaner`);
     setInterval(() => {
       for (let k of this.cfg.users.entries()) {
         if (k[1].time + this.cfg.cleanTime < Date.now()) {
-          if (this.cfg) console.log(`[USER] Deleting `, k[0]);
+          if (this.cfg.DEBUG) console.log(`[USER] Deleting `, k[0]);
           this.cfg.users.delete(k[0]);
           this.cfg.userMsg.delete(k[0]);
         }
@@ -130,7 +130,7 @@ module.exports = class balancer extends EventEmitter {
    * @param  {Object}  data
    */
   add(data) {
-    if (this.cfg) console.log(`[QUEUE] added to queue `, data);
+    if (this.cfg.DEBUG) console.log(`[QUEUE] added to queue `, data);
     this.cfg.queue.push(data);
   }
 
@@ -139,7 +139,7 @@ module.exports = class balancer extends EventEmitter {
    * it starts interval wich emit events each "timeout" msec
    */
   start() {
-    if (this.cfg) console.log(`[QUEUE] Starting queue. msgCount ${this.cfg.msgCount}, timeout ${this.cfg.timeout}`);
+    if (this.cfg.DEBUG) console.log(`[QUEUE] Starting queue. msgCount ${this.cfg.msgCount}, timeout ${this.cfg.timeout}`);
     /**
      * balancer itself
      * emits each interval
@@ -159,7 +159,7 @@ module.exports = class balancer extends EventEmitter {
    * stop balancer's interval
    */
   stop() {
-    if (this.cfg) console.log(`[QUEUE] Stopped queue`);
+    if (this.cfg.DEBUG) console.log(`[QUEUE] Stopped queue`);
     clearInterval(this.interval);
   }
 }
