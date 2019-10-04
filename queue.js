@@ -1,3 +1,7 @@
+/**
+ * @author TAB_mk https://tab.moe <queue@tab.moe>
+ */
+
 const EventEmitter = require('events');
 
 /**
