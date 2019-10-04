@@ -10,14 +10,40 @@ const queueAPI = require('./queue');
 const Queue = new queueAPI({
  timeout   : 100,       // optional | Number  | Default : 34
  msgCount  : 2,         // optional | Number  | Default : 1
+ msgLimit  : 10,        // optional | Number  | Default : 10
  cleanTime : 10000,     // optional | Number  | Default : 60000
  queue     : [],        // optional | Array   | Default : []
  users     : new Map(), // optional | Map     | Default : new Map()
+ blacklist : new Set(), // optional | Set     | Default : new Set()
+ userMsg   : new Map(), // optional | Map     | Default : new Map()
  DEBUG     : true       // optional | Boolean | Default : false
 });
 ```
 
 ## Methods:
+
+### blacklist
+
+Also not a method. This is [Set](https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Set) and you can use its methods like `.add` for add user to blacklist and `.has` to check if user blocked. This set is only alive whole while app is alive! If you need save blocked users - use `Array.from(Queue.blacklist)` and store this array wherever you need. And on start just pass existing array to constructor like `{ ... blacklist : new Set(oldArray) ... }`
+
+### getUserMessages(id)
+
+Return user messages count. (count is alive only one cleaner interval)
+
+- id `Number` - user id
+
+### incUser(id)
+
+Increase user's messages count
+
+- id `Number` - user id
+
+### isBlocked(id)
+
+Check if user reached your messages limit. Default limit is 10 msg per cleaner interval. But module not blocking user by itself. If you need use limit feature, just set your limit in constructor and then add `if (!Queue.isBlocked(id)) {}` to your code.
+
+- id `Number` - user id
+
 #### setUser(id, wait)
 
 set user data:
@@ -78,15 +104,24 @@ const Queue = new queueAPI({
 });
 
 yourBot.command('help', async (ctx) => {
+ // check if user if blacklist
+ if (!Queue.blacklist.has(ctx.id)) {
   // setup user, if no local found
   if (!Queue.getUser(ctx.id)) Queue.setUser(ctx.id, false);
-  
+
+  // increase user's messages
+  Queue.incUser(id);
+
+  // for example ban user if he sent 100 msg in one cleaner interval
+  if (Queue.getUserMessages(ctx.id) > 100) Queue.blacklist.add(ctx.id);
+
   // check if user exists in map and need reply
-  if (Queue.getUser(ctx.id) && !Queue.getUser(ctx.id).wait) {
+  // also check if user reached messages limit per cleaner
+  if (Queue.getUser(ctx.id) && !Queue.getUser(ctx.id).wait && !Queue.isBlocked(ctx.id)) {
     // set 'need reply' aka `wait` to true
     // to prevent sending more messages
     Queue.setUser(ctx.id, true);
-    
+
     Queue.add({
       type   : 'message',
       params : [ctx.id, 'help message'],
@@ -94,6 +129,7 @@ yourBot.command('help', async (ctx) => {
       try    : 1
     });
   }
+ }
 });
 
 Queue.on('message', data => {
