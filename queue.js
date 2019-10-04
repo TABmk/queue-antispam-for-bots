@@ -1,7 +1,3 @@
-/**
- * @author TAB_mk https://tab.moe <queue@tab.moe>
- */
-
 const EventEmitter = require('events');
 
 /**
@@ -10,18 +6,25 @@ const EventEmitter = require('events');
 module.exports = class balancer extends EventEmitter {
   /**
    * constructor
-   * @param {Number} timeout   delay between emits
-   * @param {Number} msgCount  message per emit
-   * @param {Number} cleanTime old users clean time (ms)
-   * @param {Array}  queue     array for queue
-   * @param {Map}    users     map for users
+   * @param {Number}  timeout   delay between emits
+   * @param {Number}  msgCount  message per emit
+   * @param {Number}  msgLimit  limit of messages from user in one cleaner interval
+   * @param {Number}  cleanTime old users clean time (ms)
+   * @param {Array}   queue     array for queue
+   * @param {Map}     users     map for users
+   * @param {Set}     blacklist blacklisted users
+   * @param {Map}     userMsg   user's message count
+   * @param {Boolean} DEBUG
    */
   constructor({
-    timeout   = 34,
+    timeout   = 40,
     msgCount  = 1,
+    msgLimit  = 2,
     cleanTime = 10000,
     queue     = [],
     users     = new Map(),
+    blacklist = new Set(),
+    userMsg   = new Map(),
     DEBUG     = false
   } = {}) {
     super();
@@ -29,11 +32,15 @@ module.exports = class balancer extends EventEmitter {
     this.cfg = {
       timeout,
       msgCount,
+      msgLimit,
       cleanTime,
+      userMsg,
       queue,
       users,
       DEBUG
     };
+
+    this.blacklist = blacklist;
 
     this.interval = null;
 
@@ -52,7 +59,7 @@ module.exports = class balancer extends EventEmitter {
    * @param {Boolean} wait
    */
   setUser(id, wait) {
-    if (this.DEBUG) console.log(`[USER] User update: `, id, wait);
+    if (this.cfg) console.log(`[USER] User update: `, id, wait);
     this.cfg.users.set(id, {
       wait,
       time : Date.now()
@@ -69,17 +76,46 @@ module.exports = class balancer extends EventEmitter {
   }
 
   /**
+   * get user's messages count
+   * @param  {Number} id
+   * @return {Object}
+   */
+  getUserMessages(id) {
+    return this.cfg.userMsg.get(id);
+  }
+
+  /**
+   * block user for one cleaner interval
+   * @param  {Number} id
+   * @return {Boolean}    is user reached limit of messages
+   */
+  isBlocked(id) {
+    return this.getUserMessages(id)+1 > this.cfg.msgLimit;
+  }
+
+  /**
+   * increment user's actions
+   * @param  {Number} id
+   */
+  async incUser(id) {
+    if (this.cfg) console.log(`[USER] New user action`, id);
+    let user = this.cfg.userMsg.get(id);
+    this.cfg.userMsg.set(id, user ? user + 1 : 1);
+  }
+
+  /**
    * starts cleaning old users
    * save ram + user can try again after cleanTime
    * if his 'wait' boolean stuck
    */
   localUsersCleaner() {
-    if (this.DEBUG) console.log(`[USER] Starting user cleaner`);
+    if (this.cfg) console.log(`[USER] Starting user cleaner`);
     setInterval(() => {
       for (let k of this.cfg.users.entries()) {
         if (k[1].time + this.cfg.cleanTime < Date.now()) {
-          if (this.DEBUG) console.log(`[USER] Deleting `, k[0]);
+          if (this.cfg) console.log(`[USER] Deleting `, k[0]);
           this.cfg.users.delete(k[0]);
+          this.cfg.userMsg.delete(k[0]);
         }
       }
     }, this.cfg.cleanTime);
@@ -90,7 +126,7 @@ module.exports = class balancer extends EventEmitter {
    * @param  {Object}  data
    */
   add(data) {
-    if (this.DEBUG) console.log(`[QUEUE] added to queue `, data);
+    if (this.cfg) console.log(`[QUEUE] added to queue `, data);
     this.cfg.queue.push(data);
   }
 
@@ -99,7 +135,7 @@ module.exports = class balancer extends EventEmitter {
    * it starts interval wich emit events each "timeout" msec
    */
   start() {
-    if (this.DEBUG) console.log(`[QUEUE] Starting queue. msgCount ${this.cfg.msgCount}, timeout ${this.cfg.timeout}`);
+    if (this.cfg) console.log(`[QUEUE] Starting queue. msgCount ${this.cfg.msgCount}, timeout ${this.cfg.timeout}`);
     /**
      * balancer itself
      * emits each interval
@@ -119,7 +155,7 @@ module.exports = class balancer extends EventEmitter {
    * stop balancer's interval
    */
   stop() {
-    if (this.DEBUG) console.log(`[QUEUE] Stopped queue`);
+    if (this.cfg) console.log(`[QUEUE] Stopped queue`);
     clearInterval(this.interval);
   }
 }
