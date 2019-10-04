@@ -24,7 +24,7 @@ const Queue = new queueAPI({
 
 ### blacklist
 
-Also not a method. This is [Set](https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Set) and you can use its methods like `.add` for add user to blacklist and `.has` to check if user blocked. This set is only alive whole while app is alive! If you need save blocked users - use `Array.from(Queue.blacklist)` and store this array wherever you need. And on start just pass existing array to constructor like `{ ... blacklist : new Set(oldArray) ... }`
+Also not a method. This is [Set](https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Set) and you can use its methods like `.add` for add user to blacklist and `.has` to check if user blocked. This set is only alive while app is alive! If you need save blocked users - use `Array.from(Queue.blacklist)` and store this array wherever you need. And on start just pass existing array to constructor like `{ ... blacklist : new Set(oldArray) ... }`
 
 ### getUserMessages(id)
 
