@@ -19,7 +19,7 @@ module.exports = class balancer extends EventEmitter {
   constructor({
     timeout   = 40,
     msgCount  = 1,
-    msgLimit  = 2,
+    msgLimit  = 10,
     cleanTime = 10000,
     queue     = [],
     users     = new Map(),
