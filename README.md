@@ -44,7 +44,7 @@ Check if user reached your messages limit. Default limit is 10 msg per cleaner i
 
 - id `Number` - user id
 
-#### setUser(id, wait)
+### setUser(id, wait)
 
 set user data:
 ```
@@ -174,7 +174,11 @@ Queue.start();
 ```
 
 ### bulk send with { timeout : 400, msgCount : 2 }
-![](https://media.giphy.com/media/cnX5TzXRpxVhM14YpX/giphy.gif)
+- telegram test with [telegraf](https://telegraf.js.org) module
+- ![](https://media.giphy.com/media/cnX5TzXRpxVhM14YpX/giphy.gif)
+
+- vk.com test with raw api requests using [node-fetch](https://www.npmjs.com/package/node-fetch)
+- ![](https://media.giphy.com/media/SSE3H46Cu61RjJQfx0/giphy.gif)
 
 ### spam test
 ![](https://media.giphy.com/media/W4iDep0iNEq8sdjhCa/giphy.gif)
