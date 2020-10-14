@@ -1,6 +1,11 @@
 # queue-antispam-for-bots
 Simple tools for queue and spam check without dependencies
 
+There was a better version, but i've lost it on my hard drive, so
+
+TODO:
+- [ ] full refactoring
+
 # Previews:
 
 ### bulk send with { timeout : 400, msgCount : 2 }
