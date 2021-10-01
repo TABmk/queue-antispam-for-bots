@@ -1,3 +1,8 @@
+# ⚠️ unmaintained ⚠️
+
+- Compex solution: https://github.com/SGrondin/bottleneck
+- For telegram: https://github.com/grammyjs/transformer-throttler
+
 # queue-antispam-for-bots
 Simple tools for queue and spam check without dependencies
 
